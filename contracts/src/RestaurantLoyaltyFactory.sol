@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./RestaurantLoyaltyToken.sol";
 import "./RestaurantLoyalty.sol";
+import "./RestaurantWelcomeNFT.sol";
 
 /**
  * @title RestaurantLoyaltyFactory
@@ -10,19 +11,26 @@ import "./RestaurantLoyalty.sol";
  */
 contract RestaurantLoyaltyFactory {
     // Event emitted when a new loyalty system is deployed
-    event LoyaltySystemDeployed(address tokenAddress, address loyaltyAddress);
+    event LoyaltySystemDeployed(address tokenAddress, address nftAddress, address loyaltyAddress);
     
     /**
      * @dev Deploy a new restaurant loyalty system
      * @return tokenAddress Address of the deployed token contract
+     * @return nftAddress Address of the deployed NFT contract
      * @return loyaltyAddress Address of the deployed loyalty contract
      */
-    function deployLoyaltySystem() public returns (address tokenAddress, address loyaltyAddress) {
+    function deployLoyaltySystem() public returns (address tokenAddress, address nftAddress, address loyaltyAddress) {
         // Deploy the loyalty token
         RestaurantLoyaltyToken token = new RestaurantLoyaltyToken();
         
-        // Deploy the main loyalty contract with the token address and set msg.sender as owner
-        RestaurantLoyalty loyalty = new RestaurantLoyalty(address(token));
+        // Deploy the welcome NFT contract with a temporary address
+        RestaurantWelcomeNFT welcomeNFT = new RestaurantWelcomeNFT(address(0));
+        
+        // Deploy the main loyalty contract with the token address and NFT address
+        RestaurantLoyalty loyalty = new RestaurantLoyalty(address(token), address(welcomeNFT));
+        
+        // Update the NFT contract with the correct loyalty contract address
+        welcomeNFT.updateLoyaltyContractAddress(address(loyalty));
         
         // Transfer ownership of the loyalty contract to the caller
         loyalty.transferOwnership(msg.sender);
@@ -30,9 +38,12 @@ contract RestaurantLoyaltyFactory {
         // Transfer ownership of the token to the loyalty contract
         token.transferOwnership(address(loyalty));
         
-        // Emit event
-        emit LoyaltySystemDeployed(address(token), address(loyalty));
+        // Transfer ownership of the NFT contract to the loyalty contract
+        welcomeNFT.transferOwnership(address(loyalty));
         
-        return (address(token), address(loyalty));
+        // Emit event
+        emit LoyaltySystemDeployed(address(token), address(welcomeNFT), address(loyalty));
+        
+        return (address(token), address(welcomeNFT), address(loyalty));
     }
 }

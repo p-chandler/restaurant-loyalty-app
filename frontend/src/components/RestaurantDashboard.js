@@ -4,15 +4,20 @@ import { ethers } from 'ethers';
 import { 
   Typography, Box, Card, CardContent, Button, TextField,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  CircularProgress, Grid, Snackbar, Alert
+  CircularProgress, Grid, Snackbar, Alert, Table, TableBody,
+  TableCell, TableContainer, TableHead, TableRow, Paper, Chip
 } from '@mui/material';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import PeopleIcon from '@mui/icons-material/People';
 
 function RestaurantDashboard() {
-  const { account, loyaltyContract, tokenContract } = useWeb3();
+  const { account, loyaltyContract, tokenContract, nftContract } = useWeb3();
   
   const [restaurantId, setRestaurantId] = useState(null);
   const [restaurantInfo, setRestaurantInfo] = useState(null);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [customers, setCustomers] = useState([]);
+  const [nftRedemptions, setNftRedemptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -20,12 +25,16 @@ function RestaurantDashboard() {
   // Form states
   const [restaurantName, setRestaurantName] = useState('');
   const [restaurantDescription, setRestaurantDescription] = useState('');
+  const [welcomeNFTURI, setWelcomeNFTURI] = useState('ipfs://QmXyZ123456789/restaurant-welcome.json');
+  const [merchandise, setMerchandise] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
   const [pointsToAward, setPointsToAward] = useState('');
   
   // Dialog states
   const [openRegisterDialog, setOpenRegisterDialog] = useState(false);
   const [openAwardDialog, setOpenAwardDialog] = useState(false);
+  const [openCustomersDialog, setOpenCustomersDialog] = useState(false);
+  const [openRedemptionsDialog, setOpenRedemptionsDialog] = useState(false);
   
   // Load restaurant data
   useEffect(() => {
@@ -47,6 +56,33 @@ function RestaurantDashboard() {
             setRestaurantInfo(restaurant);
             setIsRegistered(true);
             found = true;
+            
+            // Load customers with points at this restaurant
+            try {
+              // This is a simplified approach - in a real app, you'd need an event-based system
+              // to track all customers who have interacted with this restaurant
+              const customersData = [];
+              const redemptionsData = [];
+              
+              // For demo purposes, we'll just check for NFT redemptions
+              // In a real app, you'd use events to track this
+              if (nftContract) {
+                // This is a placeholder - in a real app, you'd use events to track redemptions
+                // For now, we'll just show a sample redemption
+                redemptionsData.push({
+                  customer: "0x1234...5678",
+                  tokenId: "1",
+                  timestamp: new Date().toISOString(),
+                  merchandise: restaurant.merchandise
+                });
+              }
+              
+              setCustomers(customersData);
+              setNftRedemptions(redemptionsData);
+            } catch (error) {
+              console.error('Error loading customer data:', error);
+            }
+            
             break;
           }
         }
@@ -64,7 +100,7 @@ function RestaurantDashboard() {
     };
     
     loadRestaurantData();
-  }, [loyaltyContract, account]);
+  }, [loyaltyContract, nftContract, account]);
   
   // Register restaurant
   const registerRestaurant = async () => {
@@ -77,7 +113,9 @@ function RestaurantDashboard() {
       const tx = await loyaltyContract.addRestaurant(
         restaurantName,
         restaurantDescription,
-        account
+        account,
+        welcomeNFTURI,
+        merchandise
       );
       
       setSuccess('Transaction submitted. Waiting for confirmation...');
@@ -179,7 +217,12 @@ function RestaurantDashboard() {
           </Button>
           
           {/* Register Restaurant Dialog */}
-          <Dialog open={openRegisterDialog} onClose={() => setOpenRegisterDialog(false)}>
+          <Dialog 
+            open={openRegisterDialog} 
+            onClose={() => setOpenRegisterDialog(false)}
+            maxWidth="md"
+            fullWidth
+          >
             <DialogTitle>Register Restaurant</DialogTitle>
             <DialogContent>
               <TextField
@@ -201,12 +244,36 @@ function RestaurantDashboard() {
                 value={restaurantDescription}
                 onChange={(e) => setRestaurantDescription(e.target.value)}
               />
+              
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+                Welcome NFT Settings
+              </Typography>
+              
+              <TextField
+                margin="dense"
+                label="Welcome NFT URI"
+                fullWidth
+                variant="outlined"
+                value={welcomeNFTURI}
+                onChange={(e) => setWelcomeNFTURI(e.target.value)}
+                helperText="URI for the NFT metadata (e.g., IPFS link)"
+              />
+              
+              <TextField
+                margin="dense"
+                label="Free Merchandise"
+                fullWidth
+                variant="outlined"
+                value={merchandise}
+                onChange={(e) => setMerchandise(e.target.value)}
+                helperText="Description of the free merchandise offered to new customers"
+              />
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setOpenRegisterDialog(false)}>Cancel</Button>
               <Button 
                 onClick={registerRestaurant}
-                disabled={!restaurantName || !restaurantDescription || isLoading}
+                disabled={!restaurantName || !restaurantDescription || !merchandise || isLoading}
               >
                 {isLoading ? <CircularProgress size={24} /> : 'Register'}
               </Button>
@@ -223,8 +290,11 @@ function RestaurantDashboard() {
               <Typography variant="body1" paragraph>
                 {restaurantInfo.description}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" paragraph>
                 Status: {restaurantInfo.isActive ? 'Active' : 'Inactive'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Welcome Gift: {restaurantInfo.merchandise}
               </Typography>
             </CardContent>
           </Card>
@@ -234,7 +304,7 @@ function RestaurantDashboard() {
           </Typography>
           
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={4}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -249,6 +319,48 @@ function RestaurantDashboard() {
                     fullWidth
                   >
                     Award Points to Customer
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+            
+            <Grid item xs={12} md={4}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Customers
+                  </Typography>
+                  <Typography variant="body2" paragraph>
+                    View customers who have earned points at your restaurant.
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    onClick={() => setOpenCustomersDialog(true)}
+                    fullWidth
+                    startIcon={<PeopleIcon />}
+                  >
+                    View Customers
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+            
+            <Grid item xs={12} md={4}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    NFT Redemptions
+                  </Typography>
+                  <Typography variant="body2" paragraph>
+                    View customers who have redeemed welcome NFTs for merchandise.
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    onClick={() => setOpenRedemptionsDialog(true)}
+                    fullWidth
+                    startIcon={<CardGiftcardIcon />}
+                  >
+                    View Redemptions
                   </Button>
                 </CardContent>
               </Card>
@@ -286,6 +398,90 @@ function RestaurantDashboard() {
               >
                 {isLoading ? <CircularProgress size={24} /> : 'Award Points'}
               </Button>
+            </DialogActions>
+          </Dialog>
+          
+          {/* Customers Dialog */}
+          <Dialog 
+            open={openCustomersDialog} 
+            onClose={() => setOpenCustomersDialog(false)}
+            maxWidth="md"
+            fullWidth
+          >
+            <DialogTitle>Restaurant Customers</DialogTitle>
+            <DialogContent>
+              {customers.length === 0 ? (
+                <Typography variant="body1">
+                  No customers have earned points at your restaurant yet.
+                </Typography>
+              ) : (
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Customer</TableCell>
+                        <TableCell>Points</TableCell>
+                        <TableCell>Last Visit</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {customers.map((customer) => (
+                        <TableRow key={customer.address}>
+                          <TableCell>{customer.address}</TableCell>
+                          <TableCell>{customer.points}</TableCell>
+                          <TableCell>{customer.lastVisit}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenCustomersDialog(false)}>Close</Button>
+            </DialogActions>
+          </Dialog>
+          
+          {/* NFT Redemptions Dialog */}
+          <Dialog 
+            open={openRedemptionsDialog} 
+            onClose={() => setOpenRedemptionsDialog(false)}
+            maxWidth="md"
+            fullWidth
+          >
+            <DialogTitle>Welcome NFT Redemptions</DialogTitle>
+            <DialogContent>
+              {nftRedemptions.length === 0 ? (
+                <Typography variant="body1">
+                  No customers have redeemed welcome NFTs yet.
+                </Typography>
+              ) : (
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Customer</TableCell>
+                        <TableCell>Token ID</TableCell>
+                        <TableCell>Redemption Date</TableCell>
+                        <TableCell>Merchandise</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {nftRedemptions.map((redemption, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{redemption.customer}</TableCell>
+                          <TableCell>{redemption.tokenId}</TableCell>
+                          <TableCell>{new Date(redemption.timestamp).toLocaleString()}</TableCell>
+                          <TableCell>{redemption.merchandise}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenRedemptionsDialog(false)}>Close</Button>
             </DialogActions>
           </Dialog>
         </Box>

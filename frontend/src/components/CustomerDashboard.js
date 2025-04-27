@@ -5,17 +5,21 @@ import {
   Typography, Box, Card, CardContent, Button, TextField,
   Dialog, DialogTitle, DialogContent, DialogActions,
   CircularProgress, Grid, Snackbar, Alert,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+  Divider, Chip, List, ListItem, ListItemText, ListItemSecondaryAction
 } from '@mui/material';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import RedeemIcon from '@mui/icons-material/Redeem';
 
 function CustomerDashboard() {
-  const { account, loyaltyContract, tokenContract } = useWeb3();
+  const { account, loyaltyContract, tokenContract, nftContract } = useWeb3();
   
   const [customerInfo, setCustomerInfo] = useState(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [totalPoints, setTotalPoints] = useState(0);
   const [restaurants, setRestaurants] = useState([]);
   const [restaurantPoints, setRestaurantPoints] = useState({});
+  const [welcomeNFTs, setWelcomeNFTs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -23,16 +27,20 @@ function CustomerDashboard() {
   // Form states
   const [customerName, setCustomerName] = useState('');
   const [selectedRestaurant, setSelectedRestaurant] = useState('');
+  const [selectedRestaurantForNFT, setSelectedRestaurantForNFT] = useState('');
   const [pointsToRedeem, setPointsToRedeem] = useState('');
+  const [selectedNFT, setSelectedNFT] = useState(null);
   
   // Dialog states
   const [openRegisterDialog, setOpenRegisterDialog] = useState(false);
   const [openRedeemDialog, setOpenRedeemDialog] = useState(false);
+  const [openNFTDialog, setOpenNFTDialog] = useState(false);
+  const [openRedeemNFTDialog, setOpenRedeemNFTDialog] = useState(false);
   
   // Load customer data
   useEffect(() => {
     const loadCustomerData = async () => {
-      if (!loyaltyContract || !tokenContract || !account) return;
+      if (!loyaltyContract || !tokenContract || !nftContract || !account) return;
       
       try {
         setIsLoading(true);
@@ -60,7 +68,8 @@ function CustomerDashboard() {
                 id: i,
                 name: restaurant.name,
                 description: restaurant.description,
-                owner: restaurant.owner
+                owner: restaurant.owner,
+                merchandise: restaurant.merchandise
               });
               
               // Get points for this restaurant
@@ -71,6 +80,31 @@ function CustomerDashboard() {
           
           setRestaurants(restaurantsArray);
           setRestaurantPoints(pointsMap);
+          
+          // Get welcome NFTs
+          try {
+            const nftIds = await loyaltyContract.getCustomerWelcomeNFTs(account);
+            
+            const nftsData = await Promise.all(
+              nftIds.map(async (id) => {
+                const restaurantId = await nftContract.tokenRestaurant(id);
+                const isRedeemed = await nftContract.tokenRedeemed(id);
+                const restaurant = restaurantsArray.find(r => r.id.toString() === restaurantId.toString()) || { name: 'Unknown Restaurant', merchandise: 'Unknown Merchandise' };
+                
+                return {
+                  id: id.toString(),
+                  restaurantId: restaurantId.toString(),
+                  restaurantName: restaurant.name,
+                  merchandise: restaurant.merchandise,
+                  isRedeemed
+                };
+              })
+            );
+            
+            setWelcomeNFTs(nftsData);
+          } catch (nftError) {
+            console.error('Error loading NFTs:', nftError);
+          }
         }
         
       } catch (error) {
@@ -82,7 +116,7 @@ function CustomerDashboard() {
     };
     
     loadCustomerData();
-  }, [loyaltyContract, tokenContract, account]);
+  }, [loyaltyContract, tokenContract, nftContract, account]);
   
   // Register customer
   const registerCustomer = async () => {
@@ -92,13 +126,19 @@ function CustomerDashboard() {
       setIsLoading(true);
       setError('');
       
-      const tx = await loyaltyContract.registerCustomer(customerName);
+      // Register with selected restaurant for welcome NFT
+      const restaurantId = selectedRestaurantForNFT ? parseInt(selectedRestaurantForNFT) : 0;
+      
+      const tx = await loyaltyContract.registerCustomer(customerName, restaurantId);
       
       setSuccess('Transaction submitted. Waiting for confirmation...');
       
       await tx.wait();
       
-      setSuccess('Registration successful!');
+      setSuccess(restaurantId > 0 ? 
+        'Registration successful! You received a welcome NFT!' : 
+        'Registration successful!'
+      );
       
       // Reload customer data
       const customer = await loyaltyContract.customers(account);
@@ -171,6 +211,38 @@ function CustomerDashboard() {
     }
   };
   
+  // Redeem welcome NFT
+  const redeemWelcomeNFT = async () => {
+    if (!loyaltyContract || !selectedNFT) return;
+    
+    try {
+      setIsLoading(true);
+      setError('');
+      
+      const tx = await loyaltyContract.redeemWelcomeNFT(selectedNFT.id);
+      
+      setSuccess('Transaction submitted. Waiting for confirmation...');
+      
+      await tx.wait();
+      
+      setSuccess('NFT redeemed successfully! You can now claim your free merchandise.');
+      
+      // Update NFT status
+      setWelcomeNFTs(welcomeNFTs.map(nft => 
+        nft.id === selectedNFT.id ? { ...nft, isRedeemed: true } : nft
+      ));
+      
+      setOpenRedeemNFTDialog(false);
+      setSelectedNFT(null);
+      
+    } catch (error) {
+      console.error('Error redeeming NFT:', error);
+      setError('Failed to redeem NFT. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   if (isLoading && !isRegistered) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -206,6 +278,9 @@ function CustomerDashboard() {
           <Typography variant="body1" paragraph>
             You're not registered as a customer yet. Register to start earning loyalty points at participating restaurants.
           </Typography>
+          <Typography variant="body1" paragraph>
+            Choose a restaurant to receive a welcome NFT that can be redeemed for free merchandise!
+          </Typography>
           <Button 
             variant="contained" 
             onClick={() => setOpenRegisterDialog(true)}
@@ -226,6 +301,28 @@ function CustomerDashboard() {
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
               />
+              
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+                Select a restaurant to receive a welcome NFT (optional):
+              </Typography>
+              
+              <TextField
+                select
+                fullWidth
+                variant="outlined"
+                value={selectedRestaurantForNFT}
+                onChange={(e) => setSelectedRestaurantForNFT(e.target.value)}
+                SelectProps={{
+                  native: true,
+                }}
+              >
+                <option value="">None</option>
+                {restaurants.map((restaurant) => (
+                  <option key={restaurant.id} value={restaurant.id}>
+                    {restaurant.name} - {restaurant.merchandise}
+                  </option>
+                ))}
+              </TextField>
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setOpenRegisterDialog(false)}>Cancel</Button>
@@ -248,6 +345,17 @@ function CustomerDashboard() {
               <Typography variant="h6">
                 Total Loyalty Points: <span className="points-badge">{totalPoints}</span>
               </Typography>
+              
+              <Box sx={{ mt: 2 }}>
+                <Button 
+                  variant="outlined" 
+                  startIcon={<CardGiftcardIcon />}
+                  onClick={() => setOpenNFTDialog(true)}
+                  disabled={welcomeNFTs.length === 0}
+                >
+                  View Welcome NFTs ({welcomeNFTs.length})
+                </Button>
+              </Box>
             </CardContent>
           </Card>
           
@@ -267,30 +375,55 @@ function CustomerDashboard() {
                     <TableCell>Restaurant</TableCell>
                     <TableCell>Description</TableCell>
                     <TableCell>Your Points</TableCell>
+                    <TableCell>Welcome Gift</TableCell>
                     <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {restaurants.map((restaurant) => (
-                    <TableRow key={restaurant.id}>
-                      <TableCell>{restaurant.name}</TableCell>
-                      <TableCell>{restaurant.description}</TableCell>
-                      <TableCell>{restaurantPoints[restaurant.id] || '0'}</TableCell>
-                      <TableCell>
-                        <Button 
-                          variant="contained" 
-                          size="small"
-                          disabled={!restaurantPoints[restaurant.id] || restaurantPoints[restaurant.id] === '0'}
-                          onClick={() => {
-                            setSelectedRestaurant(restaurant.id);
-                            setOpenRedeemDialog(true);
-                          }}
-                        >
-                          Redeem Points
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {restaurants.map((restaurant) => {
+                    const hasNFT = welcomeNFTs.some(nft => nft.restaurantId === restaurant.id.toString());
+                    const nft = welcomeNFTs.find(nft => nft.restaurantId === restaurant.id.toString());
+                    
+                    return (
+                      <TableRow key={restaurant.id}>
+                        <TableCell>{restaurant.name}</TableCell>
+                        <TableCell>{restaurant.description}</TableCell>
+                        <TableCell>{restaurantPoints[restaurant.id] || '0'}</TableCell>
+                        <TableCell>
+                          {hasNFT ? (
+                            nft.isRedeemed ? (
+                              <Chip label="Redeemed" color="default" size="small" />
+                            ) : (
+                              <Chip 
+                                label="Available" 
+                                color="success" 
+                                size="small"
+                                onClick={() => {
+                                  setSelectedNFT(nft);
+                                  setOpenRedeemNFTDialog(true);
+                                }}
+                              />
+                            )
+                          ) : (
+                            <Chip label="None" color="default" size="small" />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="contained" 
+                            size="small"
+                            disabled={!restaurantPoints[restaurant.id] || restaurantPoints[restaurant.id] === '0'}
+                            onClick={() => {
+                              setSelectedRestaurant(restaurant.id);
+                              setOpenRedeemDialog(true);
+                            }}
+                          >
+                            Redeem Points
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -330,6 +463,98 @@ function CustomerDashboard() {
                 }
               >
                 {isLoading ? <CircularProgress size={24} /> : 'Redeem'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+          
+          {/* View NFTs Dialog */}
+          <Dialog 
+            open={openNFTDialog} 
+            onClose={() => setOpenNFTDialog(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle>Your Welcome NFTs</DialogTitle>
+            <DialogContent>
+              {welcomeNFTs.length === 0 ? (
+                <Typography variant="body1">
+                  You don't have any welcome NFTs yet.
+                </Typography>
+              ) : (
+                <List>
+                  {welcomeNFTs.map((nft) => (
+                    <ListItem key={nft.id} divider>
+                      <ListItemText
+                        primary={`${nft.restaurantName} Welcome NFT`}
+                        secondary={`Free Merchandise: ${nft.merchandise}`}
+                      />
+                      <ListItemSecondaryAction>
+                        {nft.isRedeemed ? (
+                          <Chip label="Redeemed" color="default" size="small" />
+                        ) : (
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            startIcon={<RedeemIcon />}
+                            onClick={() => {
+                              setSelectedNFT(nft);
+                              setOpenNFTDialog(false);
+                              setOpenRedeemNFTDialog(true);
+                            }}
+                          >
+                            Redeem
+                          </Button>
+                        )}
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
+                </List>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenNFTDialog(false)}>Close</Button>
+            </DialogActions>
+          </Dialog>
+          
+          {/* Redeem NFT Dialog */}
+          <Dialog 
+            open={openRedeemNFTDialog} 
+            onClose={() => setOpenRedeemNFTDialog(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle>Redeem Welcome NFT</DialogTitle>
+            <DialogContent>
+              {selectedNFT && (
+                <>
+                  <Typography variant="h6" gutterBottom>
+                    {selectedNFT.restaurantName} Welcome NFT
+                  </Typography>
+                  <Typography variant="body1" paragraph>
+                    You can redeem this NFT for:
+                  </Typography>
+                  <Box sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1, mb: 2 }}>
+                    <Typography variant="h6" color="primary">
+                      {selectedNFT.merchandise}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Once redeemed, you can visit the restaurant to claim your free merchandise.
+                    Show this page to the restaurant staff as proof of redemption.
+                  </Typography>
+                </>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenRedeemNFTDialog(false)}>Cancel</Button>
+              <Button 
+                variant="contained"
+                color="primary"
+                onClick={redeemWelcomeNFT}
+                disabled={isLoading || !selectedNFT}
+              >
+                {isLoading ? <CircularProgress size={24} /> : 'Redeem NFT'}
               </Button>
             </DialogActions>
           </Dialog>

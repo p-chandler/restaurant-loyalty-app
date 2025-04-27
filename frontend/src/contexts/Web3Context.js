@@ -9,6 +9,7 @@ const Web3Context = React.createContext({
   factoryContract: null,
   loyaltyContract: null,
   tokenContract: null,
+  nftContract: null,
   isConnected: false,
   isLoading: false,
   error: '',
@@ -22,19 +23,22 @@ export const Web3Provider = ({ children }) => {
   const [factoryContract, setFactoryContract] = React.useState(null);
   const [loyaltyContract, setLoyaltyContract] = React.useState(null);
   const [tokenContract, setTokenContract] = React.useState(null);
+  const [nftContract, setNftContract] = React.useState(null);
   const [isConnected, setIsConnected] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState('');
 
   // Contract ABIs and addresses
   const FACTORY_ADDRESS = '0xB34e549E359571E73843c753D29388Ec4e5E8FF5';
-  const LOYALTY_ADDRESS = '0xaEc1165eb2AE7E17f2f1C571d66DBc331E1B55D7';
-  const TOKEN_ADDRESS = '0x46C0b6161AB36932c1F0aAc971A3a434751fdc22';
+  const LOYALTY_ADDRESS = '0x2cA483b9b259F3118a22b0E1ad1a4F5198ea97b7';
+  const TOKEN_ADDRESS = '0x67B152592426AACeaa0692AeB42D048150B8D0c4';
+  const NFT_ADDRESS = '0x27A2e33E1F13863E64BDc5bc04deCA4A9875231c';
 
   // Import ABIs
   const RestaurantLoyaltyFactoryABI = require('../contracts/RestaurantLoyaltyFactory.json');
   const RestaurantLoyaltyABI = require('../contracts/RestaurantLoyalty.json');
   const RestaurantLoyaltyTokenABI = require('../contracts/RestaurantLoyaltyToken.json');
+  const RestaurantWelcomeNFTABI = require('../contracts/RestaurantWelcomeNFT.json');
 
   // Connect to MetaMask
   const connectWallet = async () => {
@@ -68,6 +72,9 @@ export const Web3Provider = ({ children }) => {
       
       const tokenContract = new ethers.Contract(TOKEN_ADDRESS, RestaurantLoyaltyTokenABI, signer);
       setTokenContract(tokenContract);
+      
+      const nftContract = new ethers.Contract(NFT_ADDRESS, RestaurantWelcomeNFTABI, signer);
+      setNftContract(nftContract);
       
       setIsConnected(true);
       
@@ -111,6 +118,7 @@ export const Web3Provider = ({ children }) => {
         factoryContract,
         loyaltyContract,
         tokenContract,
+        nftContract,
         isConnected,
         isLoading,
         error,

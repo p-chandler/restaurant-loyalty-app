@@ -9,14 +9,23 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @dev ERC20 token for restaurant loyalty points
  */
 contract RestaurantLoyaltyToken is ERC20, Ownable {
-    constructor() ERC20("Restaurant Loyalty Token", "RLT") Ownable(msg.sender) {}
-
+    constructor() ERC20("Restaurant Loyalty Token", "RLT") {}
+    
     /**
-     * @dev Mint new tokens to a customer
-     * @param to The address to mint tokens to
-     * @param amount The amount of tokens to mint
+     * @dev Mint new tokens to an address
+     * @param to Address to mint tokens to
+     * @param amount Amount of tokens to mint
      */
     function mint(address to, uint256 amount) public onlyOwner {
         _mint(to, amount);
+    }
+    
+    /**
+     * @dev Burn tokens from an address
+     * @param from Address to burn tokens from
+     * @param amount Amount of tokens to burn
+     */
+    function burn(address from, uint256 amount) public onlyOwner {
+        _burn(from, amount);
     }
 }
