@@ -2,20 +2,59 @@ import React from 'react';
 import { useWeb3 } from '../contexts/Web3Context';
 import { Link } from 'react-router-dom';
 import { 
-  Typography, Box, Grid, Card, CardContent, Button, CircularProgress
+  Typography, Box, Grid, Card, CardContent, Button, CircularProgress,
+  CardMedia, Container
 } from '@mui/material';
 
 function Home() {
   const { isConnected, isLoading } = useWeb3();
 
+  // Fictional restaurant data
+  const restaurants = [
+    {
+      name: "Pixel Bistro",
+      description: "A modern fusion restaurant with tech-inspired ambiance",
+      merchandise: "Exclusive branded coffee mug",
+      image: "/images/modern_restaurant.jpeg"
+    },
+    {
+      name: "Blockchain Brewery",
+      description: "Craft beer and pub food in a blockchain-themed setting",
+      merchandise: "Limited edition t-shirt",
+      image: "/images/neon_bar.png"
+    },
+    {
+      name: "Crypto Café",
+      description: "Cozy café serving specialty coffees in a crypto-friendly environment",
+      merchandise: "Reusable coffee cup",
+      image: "/images/cozy_cafe.png"
+    },
+    {
+      name: "Web3 Wok",
+      description: "Asian fusion restaurant celebrating decentralized technology",
+      merchandise: "Signature recipes cookbook",
+      image: "/images/japanese_restaurant.png"
+    },
+    {
+      name: "Metaverse Munchies",
+      description: "Fast-casual dining with a virtual reality twist",
+      merchandise: "VR dining experience voucher",
+      image: "/images/fantasy_dining.png"
+    }
+  ];
+
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Welcome to the Restaurant Loyalty Program
+        Welcome to Blockchain Bites
       </Typography>
+      <Typography variant="h5" color="primary" gutterBottom>
+        Restaurant Loyalty Program on the Blockchain
+      </Typography>
+      
       <Typography variant="body1" paragraph>
         This decentralized application allows restaurants to create and manage loyalty programs for their customers.
-        Customers can earn and redeem loyalty points at participating restaurants.
+        Customers can earn and redeem loyalty points at participating restaurants, and receive exclusive NFT welcome gifts!
       </Typography>
       
       <Typography variant="body1" paragraph>
@@ -26,13 +65,13 @@ function Home() {
       {isConnected ? (
         <Grid container spacing={3} sx={{ mt: 2 }}>
           <Grid item xs={12} md={6}>
-            <Card className="restaurant-card">
+            <Card className="restaurant-card" sx={{ height: '100%' }}>
               <CardContent>
                 <Typography variant="h5" gutterBottom>
                   Restaurant Owner
                 </Typography>
                 <Typography variant="body2" paragraph>
-                  Manage your restaurant's loyalty program, add customers, and award points.
+                  Manage your restaurant's loyalty program, add customers, award points, and offer welcome NFTs.
                 </Typography>
                 <Button 
                   variant="contained" 
@@ -46,13 +85,13 @@ function Home() {
             </Card>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Card className="restaurant-card">
+            <Card className="restaurant-card" sx={{ height: '100%' }}>
               <CardContent>
                 <Typography variant="h5" gutterBottom>
                   Customer
                 </Typography>
                 <Typography variant="body2" paragraph>
-                  View your loyalty points and redeem them at participating restaurants.
+                  View your loyalty points, redeem them at participating restaurants, and collect welcome NFTs.
                 </Typography>
                 <Button 
                   variant="contained" 
@@ -77,6 +116,41 @@ function Home() {
       
       <Box sx={{ mt: 6 }}>
         <Typography variant="h5" gutterBottom>
+          Participating Restaurants
+        </Typography>
+        <Typography variant="body1" paragraph>
+          Join these innovative restaurants already using our blockchain loyalty program:
+        </Typography>
+        
+        <Grid container spacing={4}>
+          {restaurants.map((restaurant, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={restaurant.image}
+                  alt={restaurant.name}
+                />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="h6" gutterBottom>
+                    {restaurant.name}
+                  </Typography>
+                  <Typography variant="body2" paragraph>
+                    {restaurant.description}
+                  </Typography>
+                  <Typography variant="body2" color="primary">
+                    Welcome Gift: {restaurant.merchandise}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+      
+      <Box sx={{ mt: 6 }}>
+        <Typography variant="h5" gutterBottom>
           About This Project
         </Typography>
         <Typography variant="body1" paragraph>
@@ -93,13 +167,18 @@ function Home() {
             </Typography>
           </li>
           <li>
-            <Typography variant="body2" component="a" href="https://moonbase.moonscan.io/address/0x46C0b6161AB36932c1F0aAc971A3a434751fdc22" target="_blank" rel="noopener noreferrer">
-              Token Contract: 0x46C0b6161AB36932c1F0aAc971A3a434751fdc22
+            <Typography variant="body2" component="a" href="https://moonbase.moonscan.io/address/0x67B152592426AACeaa0692AeB42D048150B8D0c4" target="_blank" rel="noopener noreferrer">
+              Token Contract: 0x67B152592426AACeaa0692AeB42D048150B8D0c4
             </Typography>
           </li>
           <li>
-            <Typography variant="body2" component="a" href="https://moonbase.moonscan.io/address/0xaEc1165eb2AE7E17f2f1C571d66DBc331E1B55D7" target="_blank" rel="noopener noreferrer">
-              Main Contract: 0xaEc1165eb2AE7E17f2f1C571d66DBc331E1B55D7
+            <Typography variant="body2" component="a" href="https://moonbase.moonscan.io/address/0x2cA483b9b259F3118a22b0E1ad1a4F5198ea97b7" target="_blank" rel="noopener noreferrer">
+              Main Contract: 0x2cA483b9b259F3118a22b0E1ad1a4F5198ea97b7
+            </Typography>
+          </li>
+          <li>
+            <Typography variant="body2" component="a" href="https://moonbase.moonscan.io/address/0x27A2e33E1F13863E64BDc5bc04deCA4A9875231c" target="_blank" rel="noopener noreferrer">
+              NFT Contract: 0x27A2e33E1F13863E64BDc5bc04deCA4A9875231c
             </Typography>
           </li>
         </ul>

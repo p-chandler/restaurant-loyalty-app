@@ -163,7 +163,7 @@ function CustomerDashboard() {
       setIsLoading(true);
       setError('');
       
-      const LOYALTY_ADDRESS = '0xaEc1165eb2AE7E17f2f1C571d66DBc331E1B55D7';
+      const LOYALTY_ADDRESS = '0x2cA483b9b259F3118a22b0E1ad1a4F5198ea97b7';
       
       // Approve token transfer
       const approveTx = await tokenContract.approve(
