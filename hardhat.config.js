@@ -1,15 +1,14 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: "0.8.28",
   networks: {
     moonbase: {
-      url: "https://rpc.api.moonbase.moonbeam.network",
+      url: process.env.MOONBASE_URL || "https://rpc.api.moonbase.moonbeam.network",
       chainId: 1287, // Moonbase Alpha TestNet Chain ID
-      accounts: {
-        mnemonic: "test test test test test test test test test test test junk", // This is a placeholder mnemonic, will be replaced with a real one
-      },
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       gas: 5000000,
       gasPrice: 1000000000,
     },

@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./RestaurantLoyaltyToken.sol";
 
 /**
  * @title RestaurantLoyalty
@@ -138,7 +139,9 @@ contract RestaurantLoyalty is Ownable {
         customers[_customer].totalPoints += _points;
         
         // Mint loyalty tokens to the customer
-        RestaurantLoyaltyToken(address(loyaltyToken)).mint(_customer, _points);
+        // Cast the ERC20 token to RestaurantLoyaltyToken to access mint function
+        RestaurantLoyaltyToken tokenContract = RestaurantLoyaltyToken(address(loyaltyToken));
+        tokenContract.mint(_customer, _points);
         
         emit PointsAwarded(_restaurantId, _customer, _points);
     }

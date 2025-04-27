@@ -21,8 +21,11 @@ contract RestaurantLoyaltyFactory {
         // Deploy the loyalty token
         RestaurantLoyaltyToken token = new RestaurantLoyaltyToken();
         
-        // Deploy the main loyalty contract with the token address
+        // Deploy the main loyalty contract with the token address and set msg.sender as owner
         RestaurantLoyalty loyalty = new RestaurantLoyalty(address(token));
+        
+        // Transfer ownership of the loyalty contract to the caller
+        loyalty.transferOwnership(msg.sender);
         
         // Transfer ownership of the token to the loyalty contract
         token.transferOwnership(address(loyalty));
