@@ -15,31 +15,31 @@ function Home() {
       name: "Pixel Bistro",
       description: "A modern fusion restaurant with tech-inspired ambiance",
       merchandise: "Exclusive branded coffee mug",
-      image: "/images/modern_restaurant.jpeg"
+      image: process.env.PUBLIC_URL + "/images/modern_restaurant.jpeg"
     },
     {
       name: "Blockchain Brewery",
       description: "Craft beer and pub food in a blockchain-themed setting",
       merchandise: "Limited edition t-shirt",
-      image: "/images/neon_bar.png"
+      image: process.env.PUBLIC_URL + "/images/neon_bar.png"
     },
     {
       name: "Crypto Café",
       description: "Cozy café serving specialty coffees in a crypto-friendly environment",
       merchandise: "Reusable coffee cup",
-      image: "/images/cozy_cafe.png"
+      image: process.env.PUBLIC_URL + "/images/cozy_cafe.png"
     },
     {
       name: "Web3 Wok",
       description: "Asian fusion restaurant celebrating decentralized technology",
       merchandise: "Signature recipes cookbook",
-      image: "/images/japanese_restaurant.png"
+      image: process.env.PUBLIC_URL + "/images/japanese_restaurant.png"
     },
     {
       name: "Metaverse Munchies",
       description: "Fast-casual dining with a virtual reality twist",
       merchandise: "VR dining experience voucher",
-      image: "/images/fantasy_dining.png"
+      image: process.env.PUBLIC_URL + "/images/fantasy_dining.png"
     }
   ];
 
