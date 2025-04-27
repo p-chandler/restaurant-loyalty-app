@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/restaurant-loyalty-app/static/css/main.622268e6.css",
-    "main.js": "/restaurant-loyalty-app/static/js/main.d62e276b.js",
+    "main.js": "/restaurant-loyalty-app/static/js/main.c7159669.js",
     "static/js/453.b0325404.chunk.js": "/restaurant-loyalty-app/static/js/453.b0325404.chunk.js",
     "index.html": "/restaurant-loyalty-app/index.html",
     "main.622268e6.css.map": "/restaurant-loyalty-app/static/css/main.622268e6.css.map",
-    "main.d62e276b.js.map": "/restaurant-loyalty-app/static/js/main.d62e276b.js.map",
+    "main.c7159669.js.map": "/restaurant-loyalty-app/static/js/main.c7159669.js.map",
     "453.b0325404.chunk.js.map": "/restaurant-loyalty-app/static/js/453.b0325404.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.622268e6.css",
-    "static/js/main.d62e276b.js"
+    "static/js/main.c7159669.js"
   ]
 }
