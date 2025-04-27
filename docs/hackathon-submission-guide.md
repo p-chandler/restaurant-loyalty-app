@@ -1,89 +1,98 @@
 # Hackathon Submission Guide
 
-## Project Overview
-**Project Name**: Restaurant Loyalty Application on Polkadot
-**Category**: Open Track
-**Blockchain**: Polkadot (via Moonbeam)
+This document provides a comprehensive guide for submitting the Blockchain Bites Restaurant Loyalty Application to the hackathon.
 
-## Submission Materials
+## Submission Checklist
 
-### 1. Project Description
-The complete project description is available in the `docs/project-description.md` file. This document outlines:
-- The problem being solved
-- How the solution works
+- [x] Create a custom smart contract on Polkadot Asset Hub (via Moonbeam)
+- [x] Implement a fully-functioning application
+- [x] Make the project open source on GitHub
+- [x] Include a comprehensive project description
+- [x] Include a technical description
+- [x] Provide block explorer links for deployed contracts
+- [x] Create a demo video explaining the project
+- [x] Include screenshots of the UI
+- [x] Ensure the README is complete and informative
+
+## Key Components
+
+### 1. Smart Contracts
+
+Our application consists of four main smart contracts:
+
+- **RestaurantLoyaltyToken**: ERC20 token for loyalty points
+- **RestaurantWelcomeNFT**: ERC721 token for welcome gifts
+- **RestaurantLoyalty**: Core contract managing restaurants, customers, and loyalty operations
+- **RestaurantLoyaltyFactory**: Factory pattern contract for easy deployment
+
+All contracts are deployed on the Moonbase Alpha testnet and can be viewed on the block explorer:
+
+- Factory Contract: [0xB34e549E359571E73843c753D29388Ec4e5E8FF5](https://moonbase.moonscan.io/address/0xB34e549E359571E73843c753D29388Ec4e5E8FF5)
+- Token Contract: [0x67B152592426AACeaa0692AeB42D048150B8D0c4](https://moonbase.moonscan.io/address/0x67B152592426AACeaa0692AeB42D048150B8D0c4)
+- Main Contract: [0x2cA483b9b259F3118a22b0E1ad1a4F5198ea97b7](https://moonbase.moonscan.io/address/0x2cA483b9b259F3118a22b0E1ad1a4F5198ea97b7)
+- NFT Contract: [0x27A2e33E1F13863E64BDc5bc04deCA4A9875231c](https://moonbase.moonscan.io/address/0x27A2e33E1F13863E64BDc5bc04deCA4A9875231c)
+
+### 2. Application Deployments
+
+The application is deployed and accessible at:
+
+- GitHub Pages: [https://p-chandler.github.io/restaurant-loyalty-app/](https://p-chandler.github.io/restaurant-loyalty-app/)
+- Custom Deployment: [https://wixefvcy.manus.space](https://wixefvcy.manus.space)
+
+### 3. GitHub Repository
+
+The project is hosted on GitHub at:
+
+- Repository: [https://github.com/p-chandler/restaurant-loyalty-app](https://github.com/p-chandler/restaurant-loyalty-app)
+
+### 4. Demo Video
+
+A comprehensive demo video has been created to explain:
+- How the project works
+- How the GitHub repo is structured
+- A demonstration of all functionality
 - How Polkadot was used to achieve the solution
-- The unique advantages of using Polkadot
 
-### 2. Technical Documentation
-Detailed technical documentation is available in the `docs/technical-documentation.md` file. This document covers:
-- Smart contract architecture
-- Frontend application structure
-- Integration with Polkadot
-- Development tools used
-- Security considerations
-- Future enhancements
+The video is available at: [YouTube Link to Demo Video]
 
-### 3. Smart Contract Deployment
-The smart contracts are deployed on the Moonbase Alpha testnet (Moonbeam's testnet):
-- **Factory Contract**: [0xB34e549E359571E73843c753D29388Ec4e5E8FF5](https://moonbase.moonscan.io/address/0xB34e549E359571E73843c753D29388Ec4e5E8FF5)
-- **Token Contract**: [0x46C0b6161AB36932c1F0aAc971A3a434751fdc22](https://moonbase.moonscan.io/address/0x46C0b6161AB36932c1F0aAc971A3a434751fdc22)
-- **Main Contract**: [0xaEc1165eb2AE7E17f2f1C571d66DBc331E1B55D7](https://moonbase.moonscan.io/address/0xaEc1165eb2AE7E17f2f1C571d66DBc331E1B55D7)
+## Submission Highlights
 
-### 4. Source Code
-The complete source code is available in two formats:
-- **Source Code Package**: `restaurant-loyalty-app-source.zip` - Contains all project files including smart contracts, frontend code, and documentation
-- **Deployment Package**: `restaurant-loyalty-app-deployment.zip` - Contains the built frontend application ready for deployment
+### Problem Solved
 
-### 5. Demo Access
-To test the application:
-1. Deploy the frontend application from the deployment package to a web server
-2. Connect MetaMask to the Moonbase Alpha testnet with the following configuration:
-   - RPC URL: https://rpc.api.moonbase.moonbeam.network
-   - Chain ID: 1287
-   - Currency Symbol: DEV
-3. Ensure your wallet has test DEV tokens (available from the [Moonbase Alpha Faucet](https://faucet.moonbeam.network/))
-4. Connect your wallet to the application
-5. Register as a restaurant owner or customer
-6. Test the loyalty point awarding and redemption functionality
+Blockchain Bites addresses several key issues in traditional restaurant loyalty programs:
 
-## Project Highlights
+1. **Fragmented Loyalty Programs**: Unifies loyalty programs across multiple restaurants
+2. **Trust and Transparency Issues**: Provides immutable records of all transactions
+3. **Customer Engagement**: Enhances engagement with NFT welcome gifts
+4. **Program Management Complexity**: Simplifies program creation and management
 
-### Key Features
-- Restaurant registration and management
-- Customer registration and loyalty point tracking
-- Point awarding by restaurant owners
-- Point redemption by customers
-- Transparent blockchain-based record keeping
+### How Polkadot Was Used
 
-### Technical Achievements
-- Custom smart contracts deployed on Moonbeam's testnet
-- React.js frontend with Web3 integration
-- MetaMask wallet connection
-- Responsive design for all devices
-- Comprehensive testing and documentation
+Our application leverages the Polkadot ecosystem through:
 
-### Polkadot Integration
-- Leveraging Moonbeam's EVM compatibility
-- Positioned for cross-chain functionality
-- Benefiting from Polkadot's shared security model
-- Scalable architecture for future growth
-
-## Judging Criteria Alignment
-
-### Innovation
-The project introduces a novel approach to restaurant loyalty programs by leveraging blockchain technology to provide transparency, security, and potential interoperability.
+1. **Moonbeam Network**: Deployed on Moonbase Alpha (Moonbeam's testnet), which provides full Ethereum compatibility while being part of the Polkadot ecosystem
+2. **Cross-Chain Potential**: Architecture allows for future expansion to other Polkadot parachains through XCM
+3. **Scalability and Low Fees**: Benefits from better scalability and lower transaction fees
+4. **Security**: Leverages Polkadot's shared security model
 
 ### Technical Implementation
-The project demonstrates strong technical implementation with custom smart contracts, a well-designed frontend, and proper integration with the Polkadot ecosystem via Moonbeam.
 
-### Functionality
-The application is fully functional, allowing restaurants to register, award points, and customers to register and redeem points, all on the Moonbeam testnet.
+The application uses:
 
-### User Experience
-The frontend provides an intuitive interface for both restaurant owners and customers, with clear workflows and responsive design.
+- **Smart Contracts**: Solidity, deployed on Moonbeam's EVM
+- **Frontend**: React.js with ethers.js for Web3 integration
+- **Testing**: Hardhat and Chai for contract testing
+- **Deployment**: GitHub Pages and custom deployment
 
-### Potential Impact
-The solution has significant potential to transform the restaurant loyalty program space by addressing key pain points around transparency, trust, and interoperability.
+### Unique Features
 
-## Contact Information
-For any questions or clarifications about this submission, please contact the project team.
+1. **NFT Welcome Gifts**: New customers receive an NFT that can be redeemed for free merchandise
+2. **Multi-Restaurant Support**: Unified customer accounts across all participating restaurants
+3. **Transparent Point System**: All point transactions are recorded on the blockchain
+4. **User-Friendly Interface**: Intuitive UI for both restaurant owners and customers
+
+## Final Submission Notes
+
+This project demonstrates how blockchain technology, specifically within the Polkadot ecosystem, can revolutionize customer loyalty programs with transparency, security, and interoperability. The implementation of NFT welcome gifts adds a unique and engaging element that provides immediate value to new customers.
+
+The application is fully functional, with all smart contracts deployed on the Moonbase Alpha testnet and a working frontend that allows users to interact with these contracts. The code is open source and well-documented, making it easy for others to understand and build upon.
