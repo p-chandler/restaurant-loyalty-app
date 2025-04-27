@@ -40,71 +40,156 @@ function CustomerDashboard() {
   // Load customer data
   useEffect(() => {
     const loadCustomerData = async () => {
-      if (!loyaltyContract || !tokenContract || !nftContract || !account) return;
+      if (!account) return;
       
       try {
         setIsLoading(true);
         setError('');
         
-        // Check if the current account is a registered customer
-        const customer = await loyaltyContract.customers(account);
-        setCustomerInfo(customer);
-        setIsRegistered(customer.isRegistered);
+        // For hackathon demo: Skip blockchain interaction and check if user is already registered in local storage
+        const storedIsRegistered = localStorage.getItem('demo_isRegistered');
+        const storedCustomerName = localStorage.getItem('demo_customerName');
         
-        if (customer.isRegistered) {
-          // Get total points
-          const totalPoints = await loyaltyContract.getCustomerTotalPoints(account);
-          setTotalPoints(totalPoints.toString());
+        if (storedIsRegistered === 'true' && storedCustomerName) {
+          // Load demo data from local storage
+          const mockCustomerInfo = {
+            name: storedCustomerName,
+            isRegistered: true
+          };
           
-          // Get all restaurants
-          const restaurantCount = await loyaltyContract.restaurantCount();
-          const restaurantsArray = [];
-          const pointsMap = {};
+          setCustomerInfo(mockCustomerInfo);
+          setIsRegistered(true);
+          setTotalPoints(localStorage.getItem('demo_totalPoints') || '500');
           
-          for (let i = 1; i <= restaurantCount.toNumber(); i++) {
-            const restaurant = await loyaltyContract.restaurants(i);
-            if (restaurant.isActive) {
-              restaurantsArray.push({
-                id: i,
-                name: restaurant.name,
-                description: restaurant.description,
-                owner: restaurant.owner,
-                merchandise: restaurant.merchandise
-              });
-              
-              // Get points for this restaurant
-              const points = await loyaltyContract.getCustomerPoints(i, account);
-              pointsMap[i] = points.toString();
+          // Use the restaurants from the Home page
+          const demoRestaurants = [
+            {
+              id: 1,
+              name: "Pixel Bistro",
+              description: "A modern fusion restaurant with tech-inspired ambiance",
+              merchandise: "Exclusive branded coffee mug",
+              owner: account
+            },
+            {
+              id: 2,
+              name: "Blockchain Brewery",
+              description: "Craft beer and pub food in a blockchain-themed setting",
+              merchandise: "Limited edition t-shirt",
+              owner: account
+            },
+            {
+              id: 3,
+              name: "Crypto Café",
+              description: "Cozy café serving specialty coffees in a crypto-friendly environment",
+              merchandise: "Reusable coffee cup",
+              owner: account
+            },
+            {
+              id: 4,
+              name: "Web3 Wok",
+              description: "Asian fusion restaurant celebrating decentralized technology",
+              merchandise: "Signature recipes cookbook",
+              owner: account
+            },
+            {
+              id: 5,
+              name: "Metaverse Munchies",
+              description: "Fast-casual dining with a virtual reality twist",
+              merchandise: "VR dining experience voucher",
+              owner: account
             }
-          }
+          ];
           
-          setRestaurants(restaurantsArray);
-          setRestaurantPoints(pointsMap);
+          setRestaurants(demoRestaurants);
           
-          // Get welcome NFTs
+          // Load points from local storage or use defaults
           try {
-            const nftIds = await loyaltyContract.getCustomerWelcomeNFTs(account);
-            
-            const nftsData = await Promise.all(
-              nftIds.map(async (id) => {
-                const restaurantId = await nftContract.tokenRestaurant(id);
-                const isRedeemed = await nftContract.tokenRedeemed(id);
-                const restaurant = restaurantsArray.find(r => r.id.toString() === restaurantId.toString()) || { name: 'Unknown Restaurant', merchandise: 'Unknown Merchandise' };
-                
-                return {
-                  id: id.toString(),
-                  restaurantId: restaurantId.toString(),
-                  restaurantName: restaurant.name,
-                  merchandise: restaurant.merchandise,
-                  isRedeemed
-                };
-              })
-            );
-            
-            setWelcomeNFTs(nftsData);
-          } catch (nftError) {
-            console.error('Error loading NFTs:', nftError);
+            const storedPoints = JSON.parse(localStorage.getItem('demo_restaurantPoints') || '{}');
+            setRestaurantPoints(storedPoints.length > 0 ? storedPoints : {
+              1: '200',
+              2: '150',
+              3: '100',
+              4: '50',
+              5: '0'
+            });
+          } catch (e) {
+            // Use default points if parsing fails
+            setRestaurantPoints({
+              1: '200',
+              2: '150',
+              3: '100',
+              4: '50',
+              5: '0'
+            });
           }
+          
+          // Load NFTs from local storage or use defaults
+          try {
+            const storedNFTs = JSON.parse(localStorage.getItem('demo_welcomeNFTs') || '[]');
+            setWelcomeNFTs(storedNFTs.length > 0 ? storedNFTs : [
+              {
+                id: '1',
+                restaurantId: '1',
+                restaurantName: "Pixel Bistro",
+                merchandise: "Exclusive branded coffee mug",
+                isRedeemed: false
+              }
+            ]);
+          } catch (e) {
+            // Use default NFT if parsing fails
+            setWelcomeNFTs([
+              {
+                id: '1',
+                restaurantId: '1',
+                restaurantName: "Pixel Bistro",
+                merchandise: "Exclusive branded coffee mug",
+                isRedeemed: false
+              }
+            ]);
+          }
+        } else {
+          setIsRegistered(false);
+          
+          // Still load restaurants for registration
+          const demoRestaurants = [
+            {
+              id: 1,
+              name: "Pixel Bistro",
+              description: "A modern fusion restaurant with tech-inspired ambiance",
+              merchandise: "Exclusive branded coffee mug",
+              owner: account
+            },
+            {
+              id: 2,
+              name: "Blockchain Brewery",
+              description: "Craft beer and pub food in a blockchain-themed setting",
+              merchandise: "Limited edition t-shirt",
+              owner: account
+            },
+            {
+              id: 3,
+              name: "Crypto Café",
+              description: "Cozy café serving specialty coffees in a crypto-friendly environment",
+              merchandise: "Reusable coffee cup",
+              owner: account
+            },
+            {
+              id: 4,
+              name: "Web3 Wok",
+              description: "Asian fusion restaurant celebrating decentralized technology",
+              merchandise: "Signature recipes cookbook",
+              owner: account
+            },
+            {
+              id: 5,
+              name: "Metaverse Munchies",
+              description: "Fast-casual dining with a virtual reality twist",
+              merchandise: "VR dining experience voucher",
+              owner: account
+            }
+          ];
+          
+          setRestaurants(demoRestaurants);
         }
         
       } catch (error) {
@@ -116,34 +201,108 @@ function CustomerDashboard() {
     };
     
     loadCustomerData();
-  }, [loyaltyContract, tokenContract, nftContract, account]);
+  }, [account]);
   
   // Register customer
   const registerCustomer = async () => {
-    if (!loyaltyContract) return;
+    if (!customerName) {
+      setError('Please enter your name');
+      return;
+    }
     
     try {
       setIsLoading(true);
       setError('');
       
-      // Register with selected restaurant for welcome NFT
-      const restaurantId = selectedRestaurantForNFT ? parseInt(selectedRestaurantForNFT) : 0;
+      // For hackathon demo: Skip blockchain interaction and simulate successful registration
+      setSuccess('Registration successful! You received a welcome NFT!');
       
-      const tx = await loyaltyContract.registerCustomer(customerName, restaurantId);
+      // Simulate customer data
+      const mockCustomerInfo = {
+        name: customerName,
+        isRegistered: true
+      };
       
-      setSuccess('Transaction submitted. Waiting for confirmation...');
-      
-      await tx.wait();
-      
-      setSuccess(restaurantId > 0 ? 
-        'Registration successful! You received a welcome NFT!' : 
-        'Registration successful!'
-      );
-      
-      // Reload customer data
-      const customer = await loyaltyContract.customers(account);
-      setCustomerInfo(customer);
+      setCustomerInfo(mockCustomerInfo);
       setIsRegistered(true);
+      
+      // Simulate points and NFTs for demo
+      setTotalPoints('500');
+      
+      // Use the restaurants from the Home page
+      const demoRestaurants = [
+        {
+          id: 1,
+          name: "Pixel Bistro",
+          description: "A modern fusion restaurant with tech-inspired ambiance",
+          merchandise: "Exclusive branded coffee mug",
+          owner: account
+        },
+        {
+          id: 2,
+          name: "Blockchain Brewery",
+          description: "Craft beer and pub food in a blockchain-themed setting",
+          merchandise: "Limited edition t-shirt",
+          owner: account
+        },
+        {
+          id: 3,
+          name: "Crypto Café",
+          description: "Cozy café serving specialty coffees in a crypto-friendly environment",
+          merchandise: "Reusable coffee cup",
+          owner: account
+        },
+        {
+          id: 4,
+          name: "Web3 Wok",
+          description: "Asian fusion restaurant celebrating decentralized technology",
+          merchandise: "Signature recipes cookbook",
+          owner: account
+        },
+        {
+          id: 5,
+          name: "Metaverse Munchies",
+          description: "Fast-casual dining with a virtual reality twist",
+          merchandise: "VR dining experience voucher",
+          owner: account
+        }
+      ];
+      
+      setRestaurants(demoRestaurants);
+      
+      // Simulate points for each restaurant
+      const demoPoints = {
+        1: '200',
+        2: '150',
+        3: '100',
+        4: '50',
+        5: '0'
+      };
+      
+      setRestaurantPoints(demoPoints);
+      
+      // Simulate NFTs
+      const selectedRestId = selectedRestaurantForNFT || '1';
+      const selectedRest = demoRestaurants.find(r => r.id.toString() === selectedRestId) || demoRestaurants[0];
+      
+      const demoNFTs = [
+        {
+          id: '1',
+          restaurantId: selectedRestId,
+          restaurantName: selectedRest.name,
+          merchandise: selectedRest.merchandise,
+          isRedeemed: false
+        }
+      ];
+      
+      setWelcomeNFTs(demoNFTs);
+      
+      // Save to localStorage for persistence
+      localStorage.setItem('demo_isRegistered', 'true');
+      localStorage.setItem('demo_customerName', customerName);
+      localStorage.setItem('demo_totalPoints', '500');
+      localStorage.setItem('demo_restaurantPoints', JSON.stringify(demoPoints));
+      localStorage.setItem('demo_welcomeNFTs', JSON.stringify(demoNFTs));
       
       setOpenRegisterDialog(false);
       
@@ -157,47 +316,44 @@ function CustomerDashboard() {
   
   // Redeem points
   const redeemPoints = async () => {
-    if (!loyaltyContract || !tokenContract || !selectedRestaurant) return;
+    if (!selectedRestaurant || !pointsToRedeem) {
+      setError('Please select a restaurant and enter points to redeem');
+      return;
+    }
     
     try {
       setIsLoading(true);
       setError('');
       
-      const LOYALTY_ADDRESS = '0x2cA483b9b259F3118a22b0E1ad1a4F5198ea97b7';
-      
-      // Approve token transfer
-      const approveTx = await tokenContract.approve(
-        LOYALTY_ADDRESS,
-        ethers.utils.parseUnits(pointsToRedeem, 0)
-      );
-      
-      setSuccess('Approval transaction submitted. Waiting for confirmation...');
-      
-      await approveTx.wait();
-      
-      setSuccess('Approval successful! Redeeming points...');
-      
-      // Redeem points
-      const redeemTx = await loyaltyContract.redeemPoints(
-        selectedRestaurant,
-        ethers.utils.parseUnits(pointsToRedeem, 0)
-      );
-      
-      setSuccess('Redemption transaction submitted. Waiting for confirmation...');
-      
-      await redeemTx.wait();
-      
+      // For hackathon demo: Skip blockchain interaction and simulate successful redemption
       setSuccess('Points redeemed successfully!');
       
-      // Reload customer data
-      const totalPoints = await loyaltyContract.getCustomerTotalPoints(account);
-      setTotalPoints(totalPoints.toString());
+      // Update points for the selected restaurant
+      const currentPoints = parseInt(restaurantPoints[selectedRestaurant] || '0');
+      const pointsToRedeemNum = parseInt(pointsToRedeem);
       
-      const points = await loyaltyContract.getCustomerPoints(selectedRestaurant, account);
-      setRestaurantPoints({
+      if (pointsToRedeemNum > currentPoints) {
+        setError('You don\'t have enough points to redeem.');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Update points
+      const newPoints = (currentPoints - pointsToRedeemNum).toString();
+      const updatedRestaurantPoints = {
         ...restaurantPoints,
-        [selectedRestaurant]: points.toString()
-      });
+        [selectedRestaurant]: newPoints
+      };
+      
+      setRestaurantPoints(updatedRestaurantPoints);
+      
+      // Update total points
+      const newTotalPoints = (parseInt(totalPoints) - pointsToRedeemNum).toString();
+      setTotalPoints(newTotalPoints);
+      
+      // Save to localStorage for persistence
+      localStorage.setItem('demo_totalPoints', newTotalPoints);
+      localStorage.setItem('demo_restaurantPoints', JSON.stringify(updatedRestaurantPoints));
       
       setOpenRedeemDialog(false);
       setSelectedRestaurant('');
@@ -213,24 +369,27 @@ function CustomerDashboard() {
   
   // Redeem welcome NFT
   const redeemWelcomeNFT = async () => {
-    if (!loyaltyContract || !selectedNFT) return;
+    if (!selectedNFT) {
+      setError('Please select an NFT to redeem');
+      return;
+    }
     
     try {
       setIsLoading(true);
       setError('');
       
-      const tx = await loyaltyContract.redeemWelcomeNFT(selectedNFT.id);
-      
-      setSuccess('Transaction submitted. Waiting for confirmation...');
-      
-      await tx.wait();
-      
+      // For hackathon demo: Skip blockchain interaction and simulate successful NFT redemption
       setSuccess('NFT redeemed successfully! You can now claim your free merchandise.');
       
       // Update NFT status
-      setWelcomeNFTs(welcomeNFTs.map(nft => 
+      const updatedNFTs = welcomeNFTs.map(nft => 
         nft.id === selectedNFT.id ? { ...nft, isRedeemed: true } : nft
-      ));
+      );
+      
+      setWelcomeNFTs(updatedNFTs);
+      
+      // Save to localStorage for persistence
+      localStorage.setItem('demo_welcomeNFTs', JSON.stringify(updatedNFTs));
       
       setOpenRedeemNFTDialog(false);
       setSelectedNFT(null);
