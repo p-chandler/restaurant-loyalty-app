@@ -28,7 +28,7 @@ Blockchain Bites revolutionizes traditional restaurant loyalty programs by lever
 ![Landing Page with Restaurants](./screenshots/landing/landing_page_bottom.webp)
 
 ### Customer Dashboard
-![Customer Dashboard](./screenshots/customer/customer_dashboard.webp)
+![Customer Dashboard](./screenshots/landing/CustomerDashboard.png)
 
 ### Restaurant Dashboard
 ![Restaurant Dashboard](./screenshots/restaurant/restaurant_dashboard.webp)
