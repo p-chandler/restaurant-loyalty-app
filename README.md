@@ -18,7 +18,7 @@ Blockchain Bites revolutionizes traditional restaurant loyalty programs by lever
 
 ## 🎬 Demo Video
 
-[![Blockchain Bites Demo]([https://www.youtube.com/watch?v=_jJtrx13m4A])
+[![Blockchain Bites Demo](https://www.youtube.com/watch?v=_jJtrx13m4A)
 
 *Click the link above to watch the demo video*
 
